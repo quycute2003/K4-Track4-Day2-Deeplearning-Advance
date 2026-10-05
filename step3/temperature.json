@@ -1,0 +1,27 @@
+{
+  "T": 0.6106658951607421,
+  "fit_split": "val",
+  "n": 3501,
+  "before": {
+    "top1": 0.9737217937732077,
+    "macro_f1": 0.9641032435221208,
+    "balanced_acc": 0.9642149222944004,
+    "ece": 0.09615286034275924,
+    "nll": 0.18524871511108398
+  },
+  "after": {
+    "top1": 0.9737217937732077,
+    "macro_f1": 0.9641032435221208,
+    "balanced_acc": 0.9642149222944004,
+    "ece": 0.004736394133104849,
+    "nll": 0.1060759472757501
+  },
+  "bounds": [
+    0.0024787521766663585,
+    403.4287934927351
+  ],
+  "at_search_boundary": false,
+  "accuracy_unchanged": true,
+  "scope": "Fit and evaluate on the same val; ECE estimate may be optimistic",
+  "test_used": false
+}

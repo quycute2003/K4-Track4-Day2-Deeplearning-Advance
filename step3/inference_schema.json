@@ -1,0 +1,23 @@
+[
+  "exp_id",
+  "method",
+  "checkpoint",
+  "k",
+  "img_size",
+  "input_size",
+  "dtype",
+  "aggregation",
+  "temperature",
+  "macro_f1_val",
+  "top1_val",
+  "ece_val",
+  "nll_val",
+  "p50_ms",
+  "p95_ms",
+  "p99_ms",
+  "relative_cost",
+  "images_per_s_batch32",
+  "p95_le_100ms",
+  "status",
+  "prediction_path"
+]

@@ -1,0 +1,7 @@
+{
+  "url": "https://raw.githubusercontent.com/huggingface/pytorch-image-models/main/results/results-imagenet.csv",
+  "fetched_utc": "2026-10-04T04:29:23.530130+00:00",
+  "source_sha256": "30972bf7c7ab451bbd4480ec6116b13d0a84441c57bbc946896fd312264acfcd",
+  "matching": "exact architecture.tag, img_size=224",
+  "missing": []
+}

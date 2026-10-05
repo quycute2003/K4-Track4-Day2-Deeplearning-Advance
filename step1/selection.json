@@ -1,0 +1,12 @@
+{
+  "selected_exp_ids": [
+    "B03"
+  ],
+  "backbone": "convnext_tiny",
+  "recipe": "T00",
+  "seed": 0,
+  "rule": "highest val macro-F1; latency breaks exact ties",
+  "rationale": "B03 has highest val macro-F1 (0.963028); one backbone for Step 2 under the recorded GPU budget.",
+  "test_used": false,
+  "single_seed": true
+}

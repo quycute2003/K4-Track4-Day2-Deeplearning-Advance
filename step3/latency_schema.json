@@ -1,0 +1,23 @@
+[
+  "exp_id",
+  "method",
+  "gpu",
+  "dtype",
+  "batch",
+  "img_size",
+  "input_size",
+  "k",
+  "fused_bn",
+  "p50_ms",
+  "p95_ms",
+  "p99_ms",
+  "mean_ms",
+  "images_per_s",
+  "warmup",
+  "iterations",
+  "torch",
+  "preprocessing_included",
+  "transfer_included",
+  "timing_scope",
+  "source_path"
+]

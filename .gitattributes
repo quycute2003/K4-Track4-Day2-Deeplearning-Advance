@@ -1,0 +1,12 @@
+# Inference source hashes must stay stable across Windows and Linux checkouts.
+code/*.py text eol=lf
+tools/*.py text eol=lf
+tools/*.mjs text eol=lf
+notebooks/*.ipynb text eol=lf
+
+# Preserve exported evidence byte-for-byte.
+*.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+*.csv -text whitespace=trailing-space,space-before-tab,cr-at-eol
+*.npy binary
+*.png binary
+*.xlsx binary

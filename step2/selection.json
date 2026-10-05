@@ -1,0 +1,15 @@
+{
+  "selected_recipe": "T05",
+  "source_exp_id": "T05",
+  "backbone": "convnext_tiny",
+  "overrides": {
+    "loss": "ls",
+    "label_smoothing": 0.1
+  },
+  "seed": 0,
+  "macro_f1_val": 0.9641032435221208,
+  "delta_f1_pp": 0.10750884337996647,
+  "rule": "highest val macro-F1; T00 wins exact ties, then earliest experiment id",
+  "single_seed": true,
+  "test_used": false
+}

@@ -1,0 +1,89 @@
+{
+  "split_checks": {
+    "n": {
+      "train": 10501,
+      "val": 3501,
+      "test": 3507
+    },
+    "per_class": {
+      "train": [
+        675,
+        637,
+        618,
+        613,
+        637,
+        605,
+        644,
+        609,
+        5463
+      ],
+      "val": [
+        225,
+        213,
+        206,
+        204,
+        212,
+        202,
+        215,
+        203,
+        1821
+      ],
+      "test": [
+        226,
+        213,
+        207,
+        205,
+        213,
+        202,
+        215,
+        204,
+        1822
+      ]
+    },
+    "overlap": {
+      "train_val": 0,
+      "train_test": 0,
+      "val_test": 0
+    },
+    "union": 17509,
+    "missing_files": 0
+  },
+  "global_imbalance_ratio": 9.024777006937562,
+  "train_imbalance_ratio": 9.029752066115703,
+  "image_header_scope": "train and val only",
+  "image_sizes": {
+    "(256, 256)": 14002
+  },
+  "image_modes": {
+    "RGB": 14002
+  },
+  "training_conversion": "RGB",
+  "reference_filenames_match": true,
+  "reference_labels_match": false,
+  "label_discrepancies": [
+    {
+      "Filename": "20170714-110407-3.jpg",
+      "split": "train",
+      "fold0_Label": 0,
+      "labels_csv_Label": 1
+    }
+  ],
+  "paper_counts_match": false,
+  "paper_count_deltas": [
+    1,
+    -1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "csv_sha256": {
+    "labels.csv": "6fb95b89fd9d384f94e185a5cab6c5da7c987649399c90618ecc60acfb0112eb",
+    "test_subset0.csv": "fb212793b988bc0455aae2e48cb9eb3168014c2f47fbdb93f5f1e284e0974f75",
+    "val_subset0.csv": "1fa70a03a68def06c921a1dd7f0b53e96490f6dfad51d7d423bb145161ebc478",
+    "train_subset0.csv": "a2e63f561a545837c8cabaa276a957ccf1293ec985c9d8fbc49d67b4fd5abdb2"
+  }
+}

@@ -1,0 +1,6 @@
+model,img_size,top1,top1_err,top5,top5_err,param_count,crop_pct,interpolation
+convnext_tiny.fb_in1k,224,82.066,17.934,95.854,4.146,28.59,0.875,bicubic
+resnext50_32x4d.a1h_in1k,224,81.14,18.86,95.32,4.68,25.03,0.95,bicubic
+resnet50.a1_in1k,224,80.382,19.618,94.598,5.402,25.56,0.95,bicubic
+deit_small_patch16_224.fb_in1k,224,79.856,20.144,95.056,4.944,22.05,0.9,bicubic
+efficientnet_b0.ra_in1k,224,77.698,22.302,93.538,6.462,5.29,0.875,bicubic

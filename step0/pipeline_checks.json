@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "seed": 0,
+  "backbone": "resnet50",
+  "device": "cuda",
+  "initial_loss": 2.1827495098114014,
+  "expected_initial_ce": 2.1972245773362196,
+  "initial_tolerance": 0.75,
+  "overfit_target_loss": 0.05,
+  "steps_used": 20,
+  "final_fixed_batch_loss": 0.00019329131464473903,
+  "final_fixed_batch_accuracy": 1.0,
+  "frozen_bn_mode_passed": true,
+  "diagnostic_lr_backbone": 0.001,
+  "diagnostic_lr_head": 0.01,
+  "batch_filenames": [
+    "20170718-101402-2.jpg",
+    "20170714-142019-3.jpg",
+    "20170920-160401-3.jpg",
+    "20170913-110647-1.jpg",
+    "20170727-113049-1.jpg",
+    "20171109-175921-2.jpg",
+    "20171121-072215-1.jpg",
+    "20170210-142531-0.jpg",
+    "20171212-094343-1.jpg"
+  ],
+  "diagnostic_weights_reused_for_experiments": false
+}

@@ -1,0 +1,25 @@
+{
+  "exp_id": "T07",
+  "selected_components": [
+    "T04",
+    "T05"
+  ],
+  "overrides": {
+    "mix": "cutmix",
+    "loss": "ls",
+    "label_smoothing": 0.1
+  },
+  "variant": "T04 + T05",
+  "base": "T00 (=B03)",
+  "seed": 0,
+  "test_used": false,
+  "rule": "best non-baseline augmentation + best non-baseline loss by val macro-F1; earliest id breaks ties",
+  "source_macro_f1": {
+    "T00": 0.9630281550883212,
+    "T03": 0.9556116440679866,
+    "T04": 0.9630413373883078,
+    "T05": 0.9641032435221208,
+    "T06": 0.9625494526602486
+  },
+  "note": "Combination is tested even if the alternatives do not beat T00; it is not assumed to improve."
+}

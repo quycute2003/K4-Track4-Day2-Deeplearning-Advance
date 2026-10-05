@@ -1,0 +1,10 @@
+exp_id,method,checkpoint,k,img_size,input_size,dtype,aggregation,temperature,macro_f1_val,top1_val,ece_val,nll_val,p50_ms,p95_ms,p99_ms,relative_cost,images_per_s_batch32,p95_le_100ms,status,prediction_path
+I00,1 view FP32,runs/T05/seed0/best.pt,1,224,224,fp32,prob,1.0,0.9641032435221208,0.9737217937732077,0.09615286034275924,0.18524871511108398,,,,,,,Chờ latency T4,predictions/I00_seed0_val.csv
+I01,Hflip TTA / probability,runs/T05/seed0/best.pt,2,224,224,fp32,prob,1.0,,,,,,,,,,,Chưa chạy,predictions/I01_seed0_val.csv
+I02,5 crops / probability,runs/T05/seed0/best.pt,5,224,256,fp32,prob,1.0,,,,,,,,,,,Chưa chạy,predictions/I02_seed0_val.csv
+I03,Hflip TTA / logits,runs/T05/seed0/best.pt,2,224,224,fp32,logit,1.0,,,,,,,,,,,Chưa chạy,predictions/I03_seed0_val.csv
+I04,Resolution 256,runs/T05/seed0/best.pt,1,256,256,fp32,prob,1.0,,,,,,,,,,,Chưa chạy,predictions/I04_seed0_val.csv
+I09,Resolution 288,runs/T05/seed0/best.pt,1,288,288,fp32,prob,1.0,,,,,,,,,,,Chưa chạy,predictions/I09_seed0_val.csv
+I10,Resolution 320,runs/T05/seed0/best.pt,1,320,320,fp32,prob,1.0,,,,,,,,,,,Chưa chạy,predictions/I10_seed0_val.csv
+I07,1 view + temperature,runs/T05/seed0/best.pt,1,224,224,fp32,prob,0.6106658951607421,0.9641032435221208,0.9737217937732077,0.004736394133104849,0.1060759472757501,,,,,,,Chờ latency T4,predictions/I07_seed0_val.csv
+I08,1 view AMP FP16,runs/T05/seed0/best.pt,1,224,224,amp,prob,1.0,,,,,,,,,,,Chưa chạy,predictions/I08_seed0_val.csv
