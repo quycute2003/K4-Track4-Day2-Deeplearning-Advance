@@ -267,6 +267,8 @@ async function exportInference(root) {
     if(r.p95_ms==null&&actual[5]!=null)throw new Error('Unmeasured latency must remain blank');
   });
   for(const [name,before]of preserved)if(JSON.stringify(wb.worksheets.getItem(name).getUsedRange().values)!==before)throw new Error(`Changed ${name}`);
+  await addProgressSheets(wb,root);
+  wb.recalculate();
   console.log((await wb.inspect({kind:'table',range:'Inference!I1:T10',include:'values,formulas',tableMaxRows:10,tableMaxCols:12,maxChars:1200})).ndjson);
   console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:20},maxChars:400})).ndjson);
   for(const[name,label,range]of [['Inference','methods','A1:I10'],['Inference','metrics','J1:T10'],['Latency','pending','A1:N5']]) {
@@ -277,4 +279,48 @@ async function exportInference(root) {
   if(!await fs.stat(backup).then(()=>true,()=>false))await fs.copyFile(outputPath,backup);
   const output=await SpreadsheetFile.exportXlsx(wb);await output.save(outputPath);
   console.log('Saved Inference/Latency. B/T sheets preserved; no latency invented.');
+}
+
+async function addProgressSheets(wb,root) {
+  if(!await fs.stat(path.join(root,'step5/summary.json')).then(()=>true,()=>false))return;
+  const finalPath=await fs.stat(path.join(root,'step4/final.json')).then(()=> 'step4/final.json',()=> 'step5/pending_final.json');
+  const classPath=await fs.stat(path.join(root,'step4/per_class.json')).then(()=> 'step4/per_class.json',()=> 'step5/pending_per_class.json');
+  const previewDir=path.join(root,'runs/step5_validation');await fs.mkdir(previewDir,{recursive:true});
+  const labels={rank:'Hạng',exp_id:'ID',stage:'Bước',description:'Cấu hình',macro_f1_val:'Macro-F1 val',top1_val:'Top-1 val',
+    ece_val:'ECE val',p95_ms:'p95 (ms)',seed_count:'Số seed',timing_scope:'Điều kiện đo',notes:'Ghi chú',
+    seed:'Seed',recipe:'Công thức',inference:'Suy luận',temperature:'T val',macro_f1_test:'Macro-F1 test',
+    top1_test:'Top-1 test',ece_test:'ECE test',ece_test_uncal:'ECE test chưa T',best_epoch:'Checkpoint epoch',status:'Trạng thái',
+    class:'Lớp',support:'Số ảnh test/seed',precision:'Precision test',recall:'Recall test',f1:'F1 test'};
+  for(const[name,relative]of [['Summary','step5/summary.json'],['Final',finalPath],['PerClass',classPath]]) {
+    const rows=JSON.parse(await fs.readFile(path.join(root,relative),'utf8'));
+    const columns=Object.keys(rows[0]),end=String.fromCharCode(64+columns.length),last=rows.length+1;
+    let sheet;try{sheet=wb.worksheets.getItem(name);}catch{sheet=wb.worksheets.add(name);}
+    sheet.getUsedRange()?.clear({applyTo:'all'});sheet.showGridLines=false;
+    sheet.getRange(`A1:${end}${last}`).values=[columns.map(c=>labels[c]||c),...rows.map(r=>columns.map(c=>r[c]??null))];
+    sheet.getRange(`A1:${end}${last}`).format={font:{name:'Arial',size:10,color:'#243B53'},columnWidthPx:120,verticalAlignment:'center'};
+    sheet.getRange(`A1:${end}1`).format={fill:'#243B53',font:{name:'Arial',size:10,bold:true,color:'#FFFFFF'},wrapText:true,rowHeight:44};
+    sheet.getRange(`A2:${end}${last}`).format.rowHeight=35;
+    columns.forEach((c,index)=>{
+      const letter=String.fromCharCode(65+index),range=sheet.getRange(`${letter}2:${letter}${last}`);
+      if(['description','inference','status','timing_scope','notes','class'].includes(c)) {
+        sheet.getRange(`${letter}1:${letter}${last}`).format.columnWidthPx=['timing_scope','notes'].includes(c)?340:235;
+        range.format.wrapText=true;
+      }
+      if(c.includes('macro_f1')||c.includes('top1')||['precision','recall','f1'].includes(c))range.setNumberFormat('0.00%');
+      if(c.includes('ece'))range.setNumberFormat('0.00000');
+      if(c==='p95_ms')range.setNumberFormat('0.000');
+      if(c==='temperature')range.setNumberFormat('0.000000');
+      if(['exp_id','stage','seed','rank','seed_count'].includes(c))sheet.getRange(`${letter}1:${letter}${last}`).format.columnWidthPx=65;
+    });
+    if(name==='Summary')sheet.getRange(`A2:${end}2`).format.fill='#E4F0E9';
+    sheet.getRange(`A${last+3}:G${last+3}`).merge();
+    sheet.getRange(`A${last+3}`).values=[[name==='Summary'?
+      'Top 10 cấu hình val, một seed. T00=B03 và T05=I00 được bỏ trùng; p95 chỉ so trong Lightning Bước 3.':
+      relative.startsWith('step5/')?'Chờ Bước 4: chưa có mean ± std, metric test hoặc dự đoán test. Không điền số val vào test.':
+      'Kết quả chung kết tính từ dự đoán test; mọi lựa chọn đã khóa trên val trước test.']];
+    sheet.freezePanes.freezeRows(1);sheet.freezePanes.freezeColumns(2);
+    const range=name==='Summary'?'A1:H11':name==='Final'?'A1:H7':'A1:H10';
+    const png=await wb.render({sheetName:name,range,scale:1,format:'png'});
+    await fs.writeFile(path.join(previewDir,`${name.toLowerCase()}.png`),new Uint8Array(await png.arrayBuffer()));
+  }
 }

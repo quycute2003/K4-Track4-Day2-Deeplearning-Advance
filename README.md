@@ -1,5 +1,8 @@
 # Lab Day 2 — Backbone, công thức huấn luyện và suy luận trên DeepWeeds
 
+**Bài làm hiện tại:** [hướng dẫn tái lập](REPRODUCE.md) · [báo cáo trước chung kết](report.md).
+Bước 0–3 đã xong; Bước 4 cần train/test ba seed cho cấu hình cuối và mốc. Chưa có điểm test cuối cùng.
+
 > Track 4 · Ngày 2 · *Tích chập, chuỗi, attention · backbone · huấn luyện · suy luận*
 > Bài lab này mở rộng **Lab #2** trong slide Day 2. Slide chỉ yêu cầu 1 backbone, 3 cách khởi tạo, có/không CutMix và TTA. Ở đây bạn làm đầy đủ: **≥ 5 backbone**, **nhiều công thức huấn luyện**, **nhiều cách suy luận**, rồi chọn cấu hình tốt nhất và báo cáo.
 

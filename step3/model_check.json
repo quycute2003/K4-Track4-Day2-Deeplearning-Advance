@@ -1,0 +1,27 @@
+{
+  "n": 3501,
+  "scope": "entire val; FP32; compared with T05 cache",
+  "max_abs_logit_diff": 3.3974647521972656e-06,
+  "bn_count": 0,
+  "bn_fusion_applicable": false,
+  "checkpoint_sha256": "d38c1c3065a7ca6101e09c207613ec793a3c50f9564d3a407775e46fbf961d77",
+  "runtime": {
+    "gpu": "Tesla T4",
+    "device": "cuda",
+    "torch": "2.8.0+cu128",
+    "cuda": "12.8",
+    "cudnn": 91002,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": true,
+    "python": "3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 13:09:17) [GCC 11.2.0]",
+    "torchvision": "0.23.0+cu128",
+    "timm": "1.0.30",
+    "gpu_memory_bytes": 15636037632,
+    "platform": "Lightning AI"
+  },
+  "numerically_aligned": true,
+  "note": "ConvNeXt uses LayerNorm; BN fusion not applicable",
+  "test_used": false
+}

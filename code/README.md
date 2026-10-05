@@ -18,7 +18,10 @@ Không commit dataset hay checkpoint vào git.
 - `losses.py`: CE, label smoothing, focal, trọng số tính từ train, Mixup/CutMix với hệ số theo diện tích thật.
 - `train.py`: một `run(Config(...))`, AdamW, warmup/cosine theo bước, AMP, EMA, val macro-F1 chọn checkpoint, log/curve/predictions.
 - `step0.py`: tải/checksum dữ liệu, EDA và các kiểm tra trước thí nghiệm.
-- `inference.py` và `benchmark.py`: giữ phần khung để triển khai ở Bước 3.
+- `inference.py` và `benchmark.py`: suy luận eval, TTA, temperature scaling trên val và đo p50/p95/p99 có warmup/đồng bộ GPU.
+- `step4.py`: chung kết F00/F01 với ba seed, khóa quyết định trên val và lưu cache để không chạy lại model trên test.
+
+Hướng dẫn hiện tại cho Lightning AI và Bước 4 ở [REPRODUCE.md](../REPRODUCE.md).
 
 Ba nhóm tham số theo ý nghĩa là backbone có decay, norm/bias không decay và head có LR riêng.
 Code tách head thêm thành hai nhóm optimizer để bias/norm của head cũng không bị weight decay.
