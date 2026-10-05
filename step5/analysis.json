@@ -1,0 +1,177 @@
+{
+  "delta_f1_test": 0.010317811807400212,
+  "larger_std": 0.003775840468897587,
+  "delta_exceeds_std": true,
+  "val_test_f1_gap": 0.0008447013249064383,
+  "train_val_minutes_six_runs": 66.2308168802167,
+  "worst_final_p95_ms": 8.79023894965485,
+  "off_diagonal_counts": [
+    [
+      24,
+      "Rubber vine",
+      "Negative"
+    ],
+    [
+      23,
+      "Chinee apple",
+      "Negative"
+    ],
+    [
+      21,
+      "Snake weed",
+      "Negative"
+    ],
+    [
+      18,
+      "Lantana",
+      "Negative"
+    ],
+    [
+      16,
+      "Negative",
+      "Prickly acacia"
+    ],
+    [
+      16,
+      "Chinee apple",
+      "Snake weed"
+    ],
+    [
+      14,
+      "Prickly acacia",
+      "Negative"
+    ],
+    [
+      12,
+      "Snake weed",
+      "Chinee apple"
+    ],
+    [
+      12,
+      "Negative",
+      "Chinee apple"
+    ],
+    [
+      8,
+      "Prickly acacia",
+      "Parkinsonia"
+    ],
+    [
+      8,
+      "Parthenium",
+      "Prickly acacia"
+    ],
+    [
+      8,
+      "Negative",
+      "Rubber vine"
+    ],
+    [
+      8,
+      "Negative",
+      "Lantana"
+    ],
+    [
+      8,
+      "Lantana",
+      "Snake weed"
+    ],
+    [
+      7,
+      "Siam weed",
+      "Negative"
+    ],
+    [
+      7,
+      "Parthenium",
+      "Parkinsonia"
+    ],
+    [
+      7,
+      "Negative",
+      "Siam weed"
+    ],
+    [
+      6,
+      "Parthenium",
+      "Chinee apple"
+    ],
+    [
+      5,
+      "Negative",
+      "Snake weed"
+    ],
+    [
+      5,
+      "Negative",
+      "Parkinsonia"
+    ],
+    [
+      3,
+      "Parthenium",
+      "Negative"
+    ],
+    [
+      3,
+      "Parkinsonia",
+      "Chinee apple"
+    ],
+    [
+      2,
+      "Snake weed",
+      "Lantana"
+    ],
+    [
+      2,
+      "Prickly acacia",
+      "Parthenium"
+    ],
+    [
+      2,
+      "Parkinsonia",
+      "Parthenium"
+    ],
+    [
+      2,
+      "Negative",
+      "Parthenium"
+    ],
+    [
+      2,
+      "Lantana",
+      "Siam weed"
+    ],
+    [
+      1,
+      "Snake weed",
+      "Siam weed"
+    ],
+    [
+      1,
+      "Snake weed",
+      "Rubber vine"
+    ],
+    [
+      1,
+      "Snake weed",
+      "Prickly acacia"
+    ],
+    [
+      1,
+      "Siam weed",
+      "Rubber vine"
+    ],
+    [
+      1,
+      "Rubber vine",
+      "Prickly acacia"
+    ],
+    [
+      1,
+      "Parkinsonia",
+      "Prickly acacia"
+    ]
+  ],
+  "gallery_seed": 0,
+  "std_ddof": 1
+}

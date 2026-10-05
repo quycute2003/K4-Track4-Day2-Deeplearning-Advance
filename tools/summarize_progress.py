@@ -20,6 +20,9 @@ def table(headers,rows):
 
 
 def main():
+    if (ROOT/'step4/final.json').exists():
+        from finalize_report import main as finalize
+        return finalize()
     b=read('step1/backbones.json'); t=read('step2/ablations.json'); i=read('step3/inference.json')
     selected=read('step3/selection.json'); runtime=read('step3/runtime.json'); eda=read('step0/eda.json')
     counts=pd.read_csv(ROOT/'step0/class_counts.csv'); checks=read('step0/pipeline_checks.json')

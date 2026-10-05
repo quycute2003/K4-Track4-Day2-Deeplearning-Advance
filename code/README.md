@@ -21,7 +21,8 @@ Không commit dataset hay checkpoint vào git.
 - `inference.py` và `benchmark.py`: suy luận eval, TTA, temperature scaling trên val và đo p50/p95/p99 có warmup/đồng bộ GPU.
 - `step4.py`: chung kết F00/F01 với ba seed, khóa quyết định trên val và lưu cache để không chạy lại model trên test.
 
-Hướng dẫn hiện tại cho Lightning AI và Bước 4 ở [REPRODUCE.md](../REPRODUCE.md).
+Đã hoàn thành Bước 0–5. Hướng dẫn Lightning AI, tính lại điểm trên CPU và kết quả ba seed
+ở [REPRODUCE.md](../REPRODUCE.md) và [report.md](../report.md).
 
 Ba nhóm tham số theo ý nghĩa là backbone có decay, norm/bias không decay và head có LR riêng.
 Code tách head thêm thành hai nhóm optimizer để bias/norm của head cũng không bị weight decay.
@@ -37,7 +38,7 @@ py -X utf8 -m unittest discover -s tests -v
 py -X utf8 code/train.py --set exp_id=B01 backbone=resnet50 epochs=10 batch_size=32 num_workers=0 seed=0 images_dir=data/images labels_dir=data/labels
 ```
 
-Giữ `save_test_predictions=false` cho Bước 0–3. Seed vòng cuối dự kiến 0, 1, 2; chỉ đổi seed,
+Giữ `save_test_predictions=false` cho Bước 0–3. Seed vòng cuối đã dùng 0, 1, 2; chỉ đổi seed,
 không thay fold hay cách chia. Fold 1–4 chỉ để thử nhiều fold ở phần thưởng.
 Config/version/tag trọng số/mean/std/interpolation được ghi theo lần chạy thật.
 Khởi tạo và checkpoint tốt nhất chỉ dùng macro-F1 val; hòa thì lấy epoch sớm hơn.

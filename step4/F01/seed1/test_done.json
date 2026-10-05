@@ -1,0 +1,62 @@
+{
+  "group": "F01",
+  "seed": 1,
+  "val": {
+    "signature": {
+      "group": "F01",
+      "seed": 1,
+      "checkpoint_sha256": "04a88572851e09c83653f617659f5022d7aa74ecb130cabbf316e698f311e4d0",
+      "plan_sha256": "3ced10643abb1fcc4316560fb2904b672f09b6db2650bd635e41d99c85b41d62",
+      "runtime": {
+        "gpu": "Tesla T4",
+        "device": "cuda",
+        "torch": "2.8.0+cu128",
+        "cuda": "12.8",
+        "cudnn": 91002,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "matmul_allow_tf32": false,
+        "cudnn_allow_tf32": true,
+        "python": "3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 13:09:17) [GCC 11.2.0]",
+        "torchvision": "0.23.0+cu128",
+        "timm": "1.0.30",
+        "gpu_memory_bytes": 15636037632,
+        "platform": "Lightning AI"
+      }
+    },
+    "T": 0.616111856771697,
+    "fit_split": "val",
+    "val_metrics": {
+      "top1": 0.9762924878606113,
+      "macro_f1": 0.9678452999693072,
+      "balanced_acc": 0.9654036089912589,
+      "ece": 0.006413222016566758,
+      "nll": 0.09576367599086882
+    },
+    "val_uncal_metrics": {
+      "top1": 0.9762924878606113,
+      "macro_f1": 0.9678452999693072,
+      "balanced_acc": 0.9654036089912589,
+      "ece": 0.09157395398457592,
+      "nll": 0.1721671239053995
+    },
+    "p95_ms": 6.966536250092759,
+    "test_used": false
+  },
+  "metrics": {
+    "top1": 0.9777587681779298,
+    "macro_f1": 0.9716881420858778,
+    "balanced_acc": 0.9683780322444038,
+    "ece": 0.008441545648702673,
+    "nll": 0.08326905615412283
+  },
+  "uncal_metrics": {
+    "top1": 0.9777587681779298,
+    "macro_f1": 0.9716881420858778,
+    "balanced_acc": 0.9683780322444038,
+    "ece": 0.0934120020901055,
+    "nll": 0.16499540488335676
+  },
+  "n": 3507,
+  "test_forward_passes": 1
+}

@@ -1,23 +1,24 @@
 # DeepWeeds — So sánh backbone, công thức huấn luyện và suy luận
 
-**Trạng thái: báo cáo trước vòng chung kết. Bước 0–3 đã xong; Bước 4 chưa chạy.
-Chưa có điểm test, mean ± std qua seed hoặc ma trận nhầm lẫn test. Chưa đủ điều kiện nộp cuối.**
+**Trạng thái: đã hoàn thành Bước 0–5. Kết quả chung kết được tính lại bằng eval.py gốc.**
 
 ## 1. Tóm tắt
 
-Bài toán phân loại chín lớp trên DeepWeeds, fold 0 gốc. Đã hoàn thiện pipeline,
-so sánh năm backbone, sáu ablation riêng và một kết hợp theo ba trục, chín cấu hình suy luận.
-Tất cả lựa chọn đến thời điểm này dựa trên val 3.501 ảnh, mỗi cấu hình một seed.
-ConvNeXt-Tiny được chọn; công thức T05 dùng label smoothing 0.1. Cấu hình I09 ảnh 288
-đạt macro-F1 val 96.98%, top-1 97.71%, p95 9.068 ms
-trên pipeline GPU T4 Lightning. Bước 4 sẽ kiểm chứng bằng ba seed cùng mốc T00/I00.
-Không xem điểm test để sửa cấu hình. Kết luận về ưu thế ổn định còn chờ mean ± std.
+Phân loại chín lớp DeepWeeds, fold 0; năm backbone, ba trục công thức huấn luyện,
+một kết hợp và chín cấu hình suy luận được sàng lọc trên val. Cấu hình chốt trước test:
+ConvNeXt-Tiny fb_in1k, label smoothing 0.1, một view 288 FP32, T khớp riêng trên val.
+Ba seed đạt macro-F1 test **96.86 ± 0.27%** và top-1
+**97.58 ± 0.19%**. F1 tăng **1.03 pp** so mốc
+T00/I00, vượt std lớn hơn 0.38 pp. ECE test giảm 0.09996→0.00708;
+p95 batch 1 cao nhất **8.790 ms** trên T4, chưa gồm camera/tiền xử lý/transfer.
+Mọi lựa chọn khóa trên val; mỗi model/seed test một lượt. Giới hạn chính là một fold
+và chia ngẫu nhiên, nên chưa bảo đảm hiệu quả trên miền hoặc hệ thống robot mới.
 
 ## 2. Dữ liệu và thiết lập
 
 Dùng nguyên CSV train_subset0/val_subset0/test_subset0 của tác giả, không chia lại,
 không sửa nhãn fold. Train 10.501, val 3.501, test 3.507; hợp 17.509, các giao bằng 0.
-Test ở đây chỉ được kiểm tra metadata/sự tồn tại file, chưa chạy model hay xem ảnh test.
+Trong Bước 0–3, test chỉ dùng metadata/sự tồn tại file. Bước 4 mới chạy model test theo kế hoạch đã khóa.
 Lớp Negative chiếm khoảng 52%, vì vậy macro-F1 chín lớp là chỉ số chọn chính.
 
 | Lớp | Train | Val | Test (metadata) | Tổng | Δ Table 1 |
@@ -89,6 +90,8 @@ Xem phân tích/tag tương ứng trong step1/step1_report.md.
 
 ![B03](curves/B03_convnext_tiny_seed0.png)
 
+![F1 và số tham số backbone](step5/backbone_tradeoff.png)
+
 ## 5. Công thức huấn luyện
 
 | ID | Thay đổi | F1 val | Δ T00 (pp) | ECE val |
@@ -157,38 +160,129 @@ Pipeline bắt đầu từ tensor đã normalize trênGPU; gồm flip/crop, mode
 không gồm đọc ảnh, PIL, H2D/D2H, camera hay tải model. Vì vậy p95≤100ms chưa chứng minh
 toàn hệ thống robot≤100ms. Không trộn latency Colab với Lightning.
 
-## 7. Chung kết và phần còn thiếu
+## 7. Chung kết và phân tích lỗi
 
-**Chưa có kết quả test.** F00=T00/I00 làm mốc; F01=T05/I09+val-fitT là cấu hình chính.
-Hai nhóm sẽ train lại từ ImageNet với seed0/1/2, cùng môi trường/epoch/batch.
-Chọn checkpoint trên val224, khớp T trên val288 cho F01, khóa cả sáu trước lượt test đầu.
-Mỗi model/seed chỉ forward toàn bộ test một lần. Bản uncalibrated tạo từ cùng logits.
-Notebook step4_lightning.ipynb và step4/plan.md mô tả protocol đã chốt trước test.
+F00=T00/I00 là mốc; F01=T05/I09+T khớp trên val là cấu hình chính, đã chốt trước test.
+Cả hai nhóm train lại từ ImageNet trên Lightning T4, seed 0/1/2, train 224, 10 epoch,
+batch 32, AdamW LR backbone/head 1e-4/1e-3, decay 0.05 trừ norm/bias, warmup 1 epoch,
+cosine và AMP train. F00 dùng CE, suy luận FP32 224, T=1. F01 dùng label smoothing 0.1,
+suy luận FP32 288 một view. Checkpoint chọn bằng macro-F1 val 224 (hòa lấy epoch sớm).
+Mỗi seed F01 khớp một T trên NLL val 288; khóa cả sáu val trước khi mở test.
+Mỗi model/seed chỉ forward test một lượt; F01_uncal lấy từ cùng logits. Tổng train+val
+ghi trong history sáu lượt là 66.2 phút, chưa gồm setup/val 288/test.
 
-Sau sáu lượt cần báo cáo mean±std mẫu(ddof=1) cho val/test, ΔF1 so mốc và std lớn hơn
-giữa hai nhóm, recall Chinee Apple/SnakeWeed, ECE trước/sau, confusion counts và ảnh lỗi.
-eval.py gốc sẽ tính lại từ predictions/F00/F01_seed*_test.csv. Không chọn seed đẹp nhất.
-Final/PerClass hiện chỉ có dòng chờ kết quả; không dùng số val điền cột test.
-Ngân sách ước lượng1.5–2giờ cho sáu lượt và đánh giá, Lightning thực tế có thể khác.
+| Nhóm | F1 val | F1 test | Top-1 test | ECE test | p95 cao nhất |
+| --- | --- | --- | --- | --- | --- |
+| F00 | 96.24 ± 0.20% | 95.83 ± 0.38% | 96.72 ± 0.25% | 0.01015 ± 0.00111 | 9.055 ms |
+| F01 | 96.77 ± 0.25% | 96.86 ± 0.27% | 97.58 ± 0.19% | 0.00708 ± 0.00230 | 8.790 ms |
 
-## 8. Kết luận hiện tại và hạn chế
+Mean ± std mẫu (ddof=1), ba seed, mỗi seed đủ 3.507 ảnh test. Không gộp 10.521 lượt
+dự đoán thành 10.521 ảnh độc lập, không chọn seed tốt nhất.
+Δ macro-F1 test F01−F00 = **1.0318 điểm phần trăm**, so với std lớn hơn
+**0.3776 điểm phần trăm**; Δ vượt std và vượt 1 điểm phần trăm theo rubric I2.
+Đây là so sánh cấu hình kết hợp T05+I09+calibration với T00+I00; không quy toàn bộ Δ
+cho label smoothing. Calibration không đổi nhãn/F1; screening riêng của T05 và I09
+mới tách được đóng góp của recipe và kích thước. Không phải kiểm định ý nghĩa thống kê.
+Chênh tuyệt đối mean F1 val/test F01 là 0.0845 pp, dưới 2 pp.
 
-Backbone tạo chênh lệch lớn hơn recipe ở screening. T05 được chọn bằng val nhưng cần
-nhiều seed xác nhận. Dò độ phân giải288 hiệu quả hơn các TTA đã thử trong một checkpoint.
-Đề xuất triển khai tạm thời là một view288 FP32, với T khớp đúng val của mô hình triển khai;
-đây là lựa chọn để kiểm chứng, chưa phải kết luận từ test. Với xử lý batch lớn, AMP đáng
-cân nhắc theo throughput đã đo, nhưng không đổi F01 dtype sau khi xem điểm test.
+| Nhóm | Seed | Best epoch | T trên val | F1 val | F1 test | Top-1 test | p95 ms |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| F00 | 0 | 9 | 1.000000 | 96.25% | 95.72% | 96.64% | 9.055 |
+| F00 | 1 | 7 | 1.000000 | 96.03% | 96.25% | 97.01% | 7.995 |
+| F00 | 2 | 8 | 1.000000 | 96.43% | 95.51% | 96.52% | 6.590 |
+| F01 | 0 | 9 | 0.589308 | 97.02% | 96.65% | 97.41% | 8.594 |
+| F01 | 1 | 9 | 0.616112 | 96.78% | 97.17% | 97.78% | 6.967 |
+| F01 | 2 | 8 | 0.612540 | 96.52% | 96.76% | 97.55% | 8.790 |
 
-Giới hạn: một fold, screening một seed, batch32/10epoch, ablation một backbone,
-không có ensemble/EMA, không đo toàn hệ thống. Split ngẫu nhiên không theo địa điểm
-có thể lạc quan khi sang cánh đồng/mùa/ánh sáng mới. Bài báo DeepWeeds dùng khoảng100epoch
-và augmentation khác; không so trực tiếp với mốc95.7% như hai điều kiện tương đương.
-Chưa xác nhận ba seed, test và sáu sản phẩm cuối. Không có std giả hoặc ma trận test giả.
+ECE test F01 trước/sau TS: **0.09996 ± 0.00568 →
+0.00708 ± 0.00230**; NLL giảm
+0.17481 → 0.08649. T chỉ khớp trên val;
+không dùng test để tối ưu T. Top-1/F1 calibrated và uncal giống nhau ở cả ba seed.
+
+![Hiệu chuẩn chung kết](step5/final_calibration.png)
+
+| Lớp | Số ảnh/seed | Precision F01 | Recall F01 | F1 F01 | F1 mốc |
+| --- | --- | --- | --- | --- | --- |
+| Chinee apple | 226 | 95.09 ± 0.85% | 94.25 ± 0.77% | 94.67 ± 0.58% | 92.80 ± 1.14% |
+| Lantana | 213 | 98.40 ± 0.98% | 95.62 ± 0.98% | 96.98 ± 0.28% | 96.43 ± 0.25% |
+| Parkinsonia | 207 | 96.87 ± 1.38% | 99.03 ± 0.48% | 97.93 ± 0.48% | 97.77 ± 0.27% |
+| Parthenium | 205 | 98.99 ± 0.50% | 96.10 ± 0.84% | 97.52 ± 0.66% | 96.83 ± 1.04% |
+| Prickly acacia | 213 | 95.81 ± 1.62% | 96.24 ± 0.47% | 96.02 ± 0.78% | 94.10 ± 1.21% |
+| Rubber vine | 202 | 98.32 ± 1.13% | 95.87 ± 0.76% | 97.08 ± 0.37% | 95.95 ± 0.12% |
+| Siam weed | 215 | 98.46 ± 0.25% | 98.76 ± 0.71% | 98.61 ± 0.24% | 97.48 ± 0.83% |
+| Snake weed | 204 | 95.20 ± 0.66% | 93.79 ± 1.58% | 94.48 ± 0.56% | 93.29 ± 0.63% |
+| Negative | 1822 | 98.00 ± 0.11% | 98.85 ± 0.25% | 98.42 ± 0.11% | 97.78 ± 0.10% |
+
+Recall Chinee apple **94.25 ± 0.77%**,
+Snake weed **93.79 ± 1.58%**,
+cao hơn các mốc tham khảo 88,5%/88,8%. F1 thấp nhất còn ở Snake weed và Chinee apple.
+Điều kiện bài báo khác nên không coi so sánh này là đánh giá cùng protocol.
+
+![Ma trận mốc, tổng ba seed](step4/F00_confusion.png)
+![Ma trận cuối, tổng ba seed](step4/F01_confusion.png)
+
+Ma trận là tổng counts của ba seed, support hàng bằng ba lần số ảnh lớp.
+F01 Chinee→Snake có **16** lượt, Snake→Chinee **12** lượt;
+không diễn giải các counts này thành số ảnh khác nhau. Những hướng nhầm nhiều nhất:
+Rubber vine→Negative: 24; Chinee apple→Negative: 23; Snake weed→Negative: 21; Lantana→Negative: 18; Negative→Prickly acacia: 16.
+Nhiều lỗi là cỏ dại bị đưa về Negative; accuracy tổng bị chi phối bởi lớp Negative
+chiếm khoảng 52%, nên vẫn dùng macro-F1 và bảng từng lớp.
+
+![Ảnh lỗi F01 seed 0](step5/error_examples.png)
+
+Ảnh lấy từ đúng tên file trong CSV test seed 0: ưu tiên cặp Chinee↔Snake, rồi các lỗi
+khác có confidence cao. Không chọn seed theo điểm; seed 0 cố định chỉ để minh họa.
+Tên/nhãn/confidence và quy tắc chọn lưu ở step5/error_examples.json.
+Các giả thuyết từ ảnh cần đối chiếu trực quan: lá hẹp/lá nhỏ trong nền cỏ dày có thể
+giống nhau; thiếu bộ phận phân biệt như hoa/quả và ánh sáng mạnh có thể làm đặc trưng
+loài yếu đi; tâm crop có thể không chứa đầy đủ cây mục tiêu. Ảnh lỗi minh họa không
+chứng minh quan hệ nhân quả. Không sửa nhãn, augmentation hay crop sau khi xem test.
+
+Trong 20170803-132744-1.jpg, cây được gán Chinee apple chiếm vùng nhỏ giữa cành/cỏ khô;
+20170405-160251-0.jpg có vùng sáng mạnh sát vùng tối; 20171009-085448-2.jpg có thân cây
+lớn và ít lá trong khung. Các quan sát này gợi ý ảnh hưởng của nền và độ nhìn rõ mục tiêu,
+chưa chứng minh nguyên nhân nhầm lớp.
+
+eval.py grade tính lại từ CSV cho mục I: **20/20**, không có warning.
+Đây chỉ là điểm tự kiểm phần chất lượng model I, không phải điểm toàn bài của giảng viên.
+
+## 8. Kết luận và hạn chế
+
+Cấu hình cuối đã chọn trên val là ConvNeXt-Tiny fb_in1k, finetune T05, một view 288
+FP32 với T riêng khớp trên val. Test macro-F1 **96.86 ± 0.27%**,
+top-1 **97.58 ± 0.19%**. So với mốc tăng 1.03 pp F1,
+vượt std lớn hơn 0.38 pp trong ba seed này. Không chọn lại cấu hình từ điểm test.
+
+Backbone/pretrain tạo thay đổi lớn nhất ở screening: ConvNeXt hơn ResNet khoảng
+10,57 pp F1 val. Recipe T05 chỉ hơn T00 0,1075 pp trong một seed, bootstrap chứa 0;
+I09 hơn I00 0,5735 pp trên cùng checkpoint. Ba seed cuối xác nhận cấu hình kết hợp
+cải thiện mốc, chưa xác nhận độc lập hiệu quả từng kỹ thuật. Các tag pretrained có
+lịch sử khác nhau; không quy toàn bộ khác biệt backbone cho riêng kiến trúc.
+
+Robot có ngân sách 30–100 ms: dùng F01 một view 288 FP32 như đã chốt; p95 đo riêng
+các seed 8.594, 6.967, 8.790 ms,
+giá trị cao nhất **8.790 ms**. Mọi seed đạt ≤100 ms ở batch 1.
+Đây chỉ là pipeline với tensor đã normalize trên GPU, chưa gồm camera, decode/PIL,
+transfer hoặc hàng đợi. TTA không cần cho cấu hình này; AMP batch lớn có throughput
+tốt ở screening nhưng batch 1 p95 không tốt hơn, nên không đổi dtype cuối sau test.
+Ba seed dùng ba T riêng, không có một T chung để tùy ý ghép với checkpoint khác.
+
+Hạn chế: một fold, screening một seed, vòng cuối ba seed, 10 epoch/batch 32,
+ablation một backbone và chưa có ensemble/EMA. Split ngẫu nhiên không theo địa điểm
+có thể làm điểm test lạc quan khi sang cánh đồng/mùa/ánh sáng mới. Latency có biến động
+theo chuỗi đo và môi trường; không đo end-to-end. Bài báo train khoảng 100 epoch và
+augmentation khác; mốc 95,7% chỉ tham khảo. Bước tiếp theo có thể kiểm tra nhiều fold,
+dữ liệu miền mới và latency camera thực, dùng dữ liệu mới để chọn cấu hình.
 
 ## 9. Tái lập và bằng chứng
 
-Xem REPRODUCE.md; notebook/code trong notebooks/ và code/. Danh sách exp_id và cấu hình
-trong step1/backbones.json, step2/ablations.json, step3/inference.json và step4/frozen_plan.json.
-Curves đầy đủ từng B/T trong curves/. Pred CSV val trong predictions/; test chưa có.
-Source/checkpoint hashes trong step3/source.json; môi trường đo trong runtime.json;
-100 samples mỗi lượt trong step3/Ixx/latency_batch1/32.json. ZIP/checkpoint lớn lưu ngoàiGit.
+Xem REPRODUCE.md: notebook, môi trường, thứ tự chạy và lệnh eval. exp_id/cấu hình
+ở step1/backbones.json, step2/ablations.json, step3/inference.json, step4/frozen_plan.json.
+Code huấn luyện/evaluator đã khóa trước test; evaluator không sửa.
+Sáu config/history/summary/split_checks ở step4/training_records; từng seed có
+val_done, test_started, test_done, logits/cache và raw latency trong step4/Fxx/seedN.
+Curves đầy đủ B/T/F; 18 CSV chung kết val/test/calibrated/uncal trong predictions.
+step5/verification.json đối chiếu SHA-256 hai ZIP, sáu checkpoint, metadata/CSV gốc,
+logits→xác suất, T khớp trên val và output eval.py tính lại. Không chạy model test lần hai.
+Dataset, ZIP và checkpoint lớn giữ ngoài Git. Notebook sạch được cung cấp trong repo;
+notebook có output không có trong hai ZIP đã nhận, nên logs/cache là bằng chứng phiên.

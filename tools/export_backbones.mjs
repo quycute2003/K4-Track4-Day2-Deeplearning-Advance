@@ -4,6 +4,10 @@ import path from 'node:path';
 import { Workbook, SpreadsheetFile, FileBlob } from '@oai/artifact-tool';
 
 const root = path.resolve(process.argv[2] || '.');
+if (process.argv[3] === 'final') {
+  await exportFinal(root);
+  process.exit(0);
+}
 if (process.argv[3] === 'inference') {
   await exportInference(root);
   process.exit(0);
@@ -283,30 +287,35 @@ async function exportInference(root) {
 
 async function addProgressSheets(wb,root) {
   if(!await fs.stat(path.join(root,'step5/summary.json')).then(()=>true,()=>false))return;
-  const finalPath=await fs.stat(path.join(root,'step4/final.json')).then(()=> 'step4/final.json',()=> 'step5/pending_final.json');
+  const finalPath=await fs.stat(path.join(root,'step5/final_workbook.json')).then(()=> 'step5/final_workbook.json',()=>
+    fs.stat(path.join(root,'step4/final.json')).then(()=> 'step4/final.json',()=> 'step5/pending_final.json'));
   const classPath=await fs.stat(path.join(root,'step4/per_class.json')).then(()=> 'step4/per_class.json',()=> 'step5/pending_per_class.json');
   const previewDir=path.join(root,'runs/step5_validation');await fs.mkdir(previewDir,{recursive:true});
   const labels={rank:'Hạng',exp_id:'ID',stage:'Bước',description:'Cấu hình',macro_f1_val:'Macro-F1 val',top1_val:'Top-1 val',
     ece_val:'ECE val',p95_ms:'p95 (ms)',seed_count:'Số seed',timing_scope:'Điều kiện đo',notes:'Ghi chú',
     seed:'Seed',recipe:'Công thức',inference:'Suy luận',temperature:'T val',macro_f1_test:'Macro-F1 test',
     top1_test:'Top-1 test',ece_test:'ECE test',ece_test_uncal:'ECE test chưa T',best_epoch:'Checkpoint epoch',status:'Trạng thái',
-    class:'Lớp',support:'Số ảnh test/seed',precision:'Precision test',recall:'Recall test',f1:'F1 test'};
+    class:'Lớp',support:'Số ảnh test/seed',precision:'Precision test',recall:'Recall test',f1:'F1 test',
+    backbone:'Backbone / tag',macro_f1_val_std:'Std F1 val',top1_val_std:'Std top-1 val',macro_f1_test_std:'Std F1 test',
+    top1_test_std:'Std top-1 test',ece_test_std:'Std ECE test',ece_test_uncal_std:'Std ECE chưa T',
+    precision_mean:'Precision mean',precision_std:'Std precision',recall_mean:'Recall mean',recall_std:'Std recall',
+    f1_mean:'F1 mean',f1_std:'Std F1'};
   for(const[name,relative]of [['Summary','step5/summary.json'],['Final',finalPath],['PerClass',classPath]]) {
     const rows=JSON.parse(await fs.readFile(path.join(root,relative),'utf8'));
     const columns=Object.keys(rows[0]),end=String.fromCharCode(64+columns.length),last=rows.length+1;
     let sheet;try{sheet=wb.worksheets.getItem(name);}catch{sheet=wb.worksheets.add(name);}
-    sheet.getUsedRange()?.clear({applyTo:'all'});sheet.showGridLines=false;
+    sheet.getUsedRange()?.unmerge();sheet.getUsedRange()?.clear({applyTo:'all'});sheet.showGridLines=false;
     sheet.getRange(`A1:${end}${last}`).values=[columns.map(c=>labels[c]||c),...rows.map(r=>columns.map(c=>r[c]??null))];
     sheet.getRange(`A1:${end}${last}`).format={font:{name:'Arial',size:10,color:'#243B53'},columnWidthPx:120,verticalAlignment:'center'};
     sheet.getRange(`A1:${end}1`).format={fill:'#243B53',font:{name:'Arial',size:10,bold:true,color:'#FFFFFF'},wrapText:true,rowHeight:44};
     sheet.getRange(`A2:${end}${last}`).format.rowHeight=35;
     columns.forEach((c,index)=>{
       const letter=String.fromCharCode(65+index),range=sheet.getRange(`${letter}2:${letter}${last}`);
-      if(['description','inference','status','timing_scope','notes','class'].includes(c)) {
+      if(['description','backbone','inference','status','timing_scope','notes','class'].includes(c)) {
         sheet.getRange(`${letter}1:${letter}${last}`).format.columnWidthPx=['timing_scope','notes'].includes(c)?340:235;
         range.format.wrapText=true;
       }
-      if(c.includes('macro_f1')||c.includes('top1')||['precision','recall','f1'].includes(c))range.setNumberFormat('0.00%');
+      if(c.includes('macro_f1')||c.includes('top1')||/^(precision|recall|f1)(_|$)/.test(c))range.setNumberFormat('0.00%');
       if(c.includes('ece'))range.setNumberFormat('0.00000');
       if(c==='p95_ms')range.setNumberFormat('0.000');
       if(c==='temperature')range.setNumberFormat('0.000000');
@@ -315,12 +324,119 @@ async function addProgressSheets(wb,root) {
     if(name==='Summary')sheet.getRange(`A2:${end}2`).format.fill='#E4F0E9';
     sheet.getRange(`A${last+3}:G${last+3}`).merge();
     sheet.getRange(`A${last+3}`).values=[[name==='Summary'?
-      'Top 10 cấu hình val, một seed. T00=B03 và T05=I00 được bỏ trùng; p95 chỉ so trong Lightning Bước 3.':
-      relative.startsWith('step5/')?'Chờ Bước 4: chưa có mean ± std, metric test hoặc dự đoán test. Không điền số val vào test.':
+      'Top 10 theo val; B/T/I một seed, F mean ba seed. T00=B03 và T05=I00 bỏ trùng.':
+      relative.includes('pending_')?'Chờ Bước 4: chưa có mean ± std, metric test hoặc dự đoán test. Không điền số val vào test.':
       'Kết quả chung kết tính từ dự đoán test; mọi lựa chọn đã khóa trên val trước test.']];
     sheet.freezePanes.freezeRows(1);sheet.freezePanes.freezeColumns(2);
     const range=name==='Summary'?'A1:H11':name==='Final'?'A1:H7':'A1:H10';
     const png=await wb.render({sheetName:name,range,scale:1,format:'png'});
     await fs.writeFile(path.join(previewDir,`${name.toLowerCase()}.png`),new Uint8Array(await png.arrayBuffer()));
   }
+}
+
+async function exportFinal(root) {
+  const outputPath=path.join(root,'results.xlsx');
+  const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(outputPath));
+  const preserved=['Backbones','Training','Inference'].map(name=>[name,
+    JSON.stringify(wb.worksheets.getItem(name).getUsedRange().values),
+    JSON.stringify(wb.worksheets.getItem(name).getUsedRange().formulas)]);
+  const directory=path.join(root,'runs/step5_validation');await fs.mkdir(directory,{recursive:true});
+  for(const [name,range]of [['Summary','A1:H11'],['Final','A1:H7'],['PerClass','A1:H10']]) {
+    const png=await wb.render({sheetName:name,range,scale:1,format:'png'});
+    await fs.writeFile(path.join(directory,`before_${name.toLowerCase()}.png`),new Uint8Array(await png.arrayBuffer()));
+  }
+  await addProgressSheets(wb,root);
+  const expected=JSON.parse(await fs.readFile(path.join(root,'step5/final_workbook.json'),'utf8'));
+  const fin=wb.worksheets.getItem('Final');
+  fin.getRange('T1:T9').format.columnWidthPx=150;
+  for(const [row,start,end]of [[8,2,4],[9,5,7]]) {
+    for(const [mean,std]of [['G','H'],['I','J'],['K','L'],['M','N'],['O','P'],['Q','R']]) {
+      fin.getRange(`${mean}${row}`).formulas=[[`=AVERAGE(${mean}${start}:${mean}${end})`]];
+      fin.getRange(`${std}${row}`).formulas=[[`=STDEV.S(${mean}${start}:${mean}${end})`]];
+    }
+    fin.getRange(`S${row}`).formulas=[[`=MAX(S${start}:S${end})`]];
+    fin.getRange(`A${row}:U${row}`).format.fill=row===9?'#DDEDE4':'#EDF1F5';
+    fin.getRange(`A${row}:U${row}`).format.font.bold=true;
+  }
+  const sum=wb.worksheets.getItem('Summary');
+  sum.getRange('A15:H17').values=[['Nhóm','F1 test mean','Std F1 test','Top-1 mean','Std top-1','ECE test','p95 cao nhất (ms)','Số seed'],
+    ['F00',null,null,null,null,null,null,3],['F01',null,null,null,null,null,null,3]];
+  sum.getRange('A15:H15').format={fill:'#243B53',font:{name:'Arial',size:10,bold:true,color:'#FFFFFF'},wrapText:true,verticalAlignment:'center',rowHeight:44};
+  sum.getRange('A16:H17').format={font:{name:'Arial',size:10,color:'#243B53'},rowHeight:30};
+  for(const [row,source]of [[16,8],[17,9]]) {
+    sum.getRange(`B${row}:G${row}`).formulas=[[`='Final'!K${source}`,`='Final'!L${source}`,`='Final'!M${source}`,
+      `='Final'!N${source}`,`='Final'!O${source}`,`='Final'!S${source}`]];
+  }
+  sum.getRange('B16:E17').setNumberFormat('0.00%');sum.getRange('F16:F17').setNumberFormat('0.00000');
+  sum.getRange('G16:G17').setNumberFormat('0.000');sum.getRange('A17:H17').format.fill='#DDEDE4';
+  sum.getRange('A19:C19').merge();sum.getRange('A19').values=[['Δ F1 test (pp)']];sum.getRange('D19').formulas=[['=100*(B17-B16)']];
+  sum.getRange('A20:C20').merge();sum.getRange('A20').values=[['Std lớn hơn (pp)']];sum.getRange('D20').formulas=[['=100*MAX(C16:C17)']];
+  sum.getRange('D19:D20').setNumberFormat('0.0000');
+  sum.getRange('F19:H19').merge();sum.getRange('F19').values=[['F01 đã chốt trên val trước test.']];
+  sum.getRange('F20:H20').merge();sum.getRange('F20').formulas=[['=IF(D19>D20,"Δ vượt std lớn hơn","Δ chưa vượt std lớn hơn")']];
+  sum.getRange('A19:H20').format={font:{name:'Arial',size:10,color:'#243B53'},rowHeight:28};
+  // Keep the original 18 timing records, add measured final rows without old merged footers.
+  const lat=wb.worksheets.getItem('Latency');lat.getUsedRange()?.unmerge();lat.getUsedRange()?.clear({applyTo:'all'});
+  const timingRows=JSON.parse(await fs.readFile(path.join(root,'step5/latency_workbook.json'),'utf8'));
+  const schema=[...JSON.parse(await fs.readFile(path.join(root,'step3/latency_schema.json'),'utf8')),'seed','temperature'];
+  const titles={exp_id:'ID',method:'Phương pháp',gpu:'GPU',dtype:'dtype',batch:'Batch',img_size:'Crop size',input_size:'Input size',
+    k:'K',fused_bn:'Gộp BN',p50_ms:'p50 (ms)',p95_ms:'p95 (ms)',p99_ms:'p99 (ms)',mean_ms:'Mean (ms)',
+    images_per_s:'Ảnh/s',iterations:'Lần đo',warmup:'Warmup',preprocessing_included:'Gồm tiền xử lý',transfer_included:'Gồm transfer',
+    timing_scope:'Phạm vi đo',source_path:'Nguồn số đo',seed:'Seed',temperature:'T val'};
+  const end=String.fromCharCode(64+schema.length),last=timingRows.length+1;
+  lat.getRange(`A1:${end}${last}`).values=[schema.map(c=>titles[c]||c),...timingRows.map(r=>schema.map(c=>r[c]??null))];
+  lat.getRange(`A1:${end}${last}`).format={font:{name:'Arial',size:10,color:'#243B53'},columnWidthPx:115,verticalAlignment:'center',rowHeight:30};
+  lat.getRange(`A1:${end}1`).format={fill:'#243B53',font:{name:'Arial',size:10,bold:true,color:'#FFFFFF'},wrapText:true,rowHeight:44};
+  schema.forEach((c,i)=>{
+    const column=String.fromCharCode(65+i),range=lat.getRange(`${column}2:${column}${last}`);
+    if(c==='method')lat.getRange(`${column}1:${column}${last}`).format.columnWidthPx=240;
+    if(c==='source_path'||c==='timing_scope')lat.getRange(`${column}1:${column}${last}`).format.columnWidthPx=420;
+    if(c.endsWith('_ms'))range.setNumberFormat('0.000');
+    if(c==='images_per_s')range.setNumberFormat('0.0');
+    if(c==='temperature')range.setNumberFormat('0.000000');
+    if(c==='seed')lat.getRange(`${column}1:${column}${last}`).format.columnWidthPx=65;
+  });
+  lat.freezePanes.freezeRows(1);lat.freezePanes.freezeColumns(2);
+  wb.recalculate();
+  for(const row of [8,9]) {
+    const actual=fin.getRange(`A${row}:U${row}`).values[0];
+    Object.keys(expected[row-2]).forEach((key,index)=>{
+      if(typeof expected[row-2][key]==='number'&&(!Number.isFinite(actual[index])||Math.abs(actual[index]-expected[row-2][key])>1e-10))
+        throw new Error(`Final aggregate mismatch ${key}`);
+    });
+  }
+  // Recalculation proof: an edited seed affects mean, std and linked summary.
+  const original=fin.getRange('K5').values;
+  const oldMean=fin.getRange('K9').values[0][0];fin.getRange('K5').values=[[original[0][0]+.03]];wb.recalculate();
+  const inputs=[original[0][0]+.03,expected[4].macro_f1_test,expected[5].macro_f1_test];
+  const testMean=inputs.reduce((a,b)=>a+b)/3;
+  const testStd=Math.sqrt(inputs.reduce((a,b)=>a+(b-testMean)**2,0)/2);
+  if(Math.abs(fin.getRange('K9').values[0][0]-oldMean-.01)>1e-10||Math.abs(sum.getRange('B17').values[0][0]-oldMean-.01)>1e-10)
+    throw new Error('Final/summary mean did not react to edited seed');
+  if(Math.abs(fin.getRange('L9').values[0][0]-testStd)>1e-10||Math.abs(sum.getRange('C17').values[0][0]-testStd)>1e-10)
+    throw new Error('Sample std did not react to edited seed');
+  fin.getRange('K5').values=original;wb.recalculate();
+  for(const[name,values,formulas]of preserved) {
+    const range=wb.worksheets.getItem(name).getUsedRange();
+    if(JSON.stringify(range.values)!==values||JSON.stringify(range.formulas)!==formulas)throw new Error(`Changed ${name}`);
+  }
+  // Add the required input resolution using each actual training config.
+  const backbones=wb.worksheets.getItem('Backbones');
+  const source=JSON.parse(await fs.readFile(path.join(root,'step1/backbones.json'),'utf8'));
+  const sizes=await Promise.all(source.map(async r=>JSON.parse(await fs.readFile(path.join(root,r.config_path),'utf8')).config.img_size));
+  backbones.getRange('T1:T6').values=[['Crop size'],...sizes.map(s=>[s])];
+  backbones.getRange('T1:T6').format={font:{name:'Arial',size:10,color:'#243B53'},columnWidthPx:90,verticalAlignment:'center'};
+  backbones.getRange('T1').format={fill:'#243B53',font:{name:'Arial',size:10,bold:true,color:'#FFFFFF'},wrapText:true,rowHeight:42};
+  wb.recalculate();
+  const errors=await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A|#NUM!|#NULL!',options:{useRegex:true,maxResults:20},maxChars:600});
+  console.log(errors.ndjson);
+  console.log((await wb.inspect({kind:'table',range:'Final!G8:U9',include:'values,formulas',tableMaxRows:2,tableMaxCols:15,maxChars:1700})).ndjson);
+  for(const[name,label,range]of [['Summary','summary','A1:H20'],['Final','final_config','A1:F9'],['Final','final_metrics','G1:N9'],
+    ['Final','final_calibration','O1:U9'],['PerClass','perclass','A1:I10'],['PerClass','perclass_final','A11:I19'],
+    ['Latency','final_latency','A19:N25'],['Latency','latency_conditions','O19:W25'],['Backbones','backbone_resolution','T1:T6']]) {
+    const png=await wb.render({sheetName:name,range,scale:1,format:'png'});
+    await fs.writeFile(path.join(directory,`${label}.png`),new Uint8Array(await png.arrayBuffer()));
+  }
+  const output=await SpreadsheetFile.exportXlsx(wb);await output.save(outputPath);
+  console.log('Saved final workbook: seven required sheets, six seeds + aggregate formulas, 24 timing records.');
 }

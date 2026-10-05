@@ -1,0 +1,16 @@
+{
+  "exp_id": "F00",
+  "seed": 0,
+  "backbone": "convnext_tiny",
+  "best_epoch": 9,
+  "macro_f1_val": 0.9625123132868771,
+  "top1_val": 0.9734361610968295,
+  "ece_val": 0.00810548560225157,
+  "val_loss": 0.09936722333845463,
+  "params_m": 27.827049,
+  "gmacs": 4.469676288,
+  "mean_train_seconds": 73.85350279230002,
+  "val_predictions": "/teamspace/studios/this_studio/deepweeds_step3_lightning/project/predictions/F00_seed0_val.csv",
+  "curve": "/teamspace/studios/this_studio/deepweeds_step3_lightning/project/curves/F00_convnext_tiny_seed0.png",
+  "test_evaluated": false
+}

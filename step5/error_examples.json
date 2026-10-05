@@ -1,0 +1,110 @@
+[
+  {
+    "Filename": "20170803-132744-1.jpg",
+    "y_true": 0,
+    "y_pred": 7,
+    "confidence": 0.96782394,
+    "true_class": "Chinee apple",
+    "predicted_class": "Snake weed",
+    "seed": 0
+  },
+  {
+    "Filename": "20170705-162506-0.jpg",
+    "y_true": 7,
+    "y_pred": 0,
+    "confidence": 0.94419374,
+    "true_class": "Snake weed",
+    "predicted_class": "Chinee apple",
+    "seed": 0
+  },
+  {
+    "Filename": "20170811-133725-1.jpg",
+    "y_true": 0,
+    "y_pred": 7,
+    "confidence": 0.8472001,
+    "true_class": "Chinee apple",
+    "predicted_class": "Snake weed",
+    "seed": 0
+  },
+  {
+    "Filename": "20170405-160251-0.jpg",
+    "y_true": 0,
+    "y_pred": 7,
+    "confidence": 0.82956707,
+    "true_class": "Chinee apple",
+    "predicted_class": "Snake weed",
+    "seed": 0
+  },
+  {
+    "Filename": "20170217-143546-0.jpg",
+    "y_true": 7,
+    "y_pred": 0,
+    "confidence": 0.70197241,
+    "true_class": "Snake weed",
+    "predicted_class": "Chinee apple",
+    "seed": 0
+  },
+  {
+    "Filename": "20170304-132652-0.jpg",
+    "y_true": 7,
+    "y_pred": 0,
+    "confidence": 0.54982977,
+    "true_class": "Snake weed",
+    "predicted_class": "Chinee apple",
+    "seed": 0
+  },
+  {
+    "Filename": "20170405-160310-0.jpg",
+    "y_true": 8,
+    "y_pred": 0,
+    "confidence": 0.99697498,
+    "true_class": "Negative",
+    "predicted_class": "Chinee apple",
+    "seed": 0
+  },
+  {
+    "Filename": "20170630-155129-0.jpg",
+    "y_true": 7,
+    "y_pred": 8,
+    "confidence": 0.99640289,
+    "true_class": "Snake weed",
+    "predicted_class": "Negative",
+    "seed": 0
+  },
+  {
+    "Filename": "20171113-060629-1.jpg",
+    "y_true": 5,
+    "y_pred": 8,
+    "confidence": 0.9934257,
+    "true_class": "Rubber vine",
+    "predicted_class": "Negative",
+    "seed": 0
+  },
+  {
+    "Filename": "20171113-135825-1.jpg",
+    "y_true": 6,
+    "y_pred": 8,
+    "confidence": 0.99274694,
+    "true_class": "Siam weed",
+    "predicted_class": "Negative",
+    "seed": 0
+  },
+  {
+    "Filename": "20171102-094714-3.jpg",
+    "y_true": 4,
+    "y_pred": 8,
+    "confidence": 0.98476587,
+    "true_class": "Prickly acacia",
+    "predicted_class": "Negative",
+    "seed": 0
+  },
+  {
+    "Filename": "20171109-085448-2.jpg",
+    "y_true": 5,
+    "y_pred": 8,
+    "confidence": 0.98321432,
+    "true_class": "Rubber vine",
+    "predicted_class": "Negative",
+    "seed": 0
+  }
+]

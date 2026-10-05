@@ -1,0 +1,36 @@
+{
+  "signature": {
+    "group": "F00",
+    "seed": 1,
+    "checkpoint_sha256": "c9014daaee33611f52e73697109c8c686503753f3233efc0671819ee0e7529ba",
+    "plan_sha256": "3ced10643abb1fcc4316560fb2904b672f09b6db2650bd635e41d99c85b41d62",
+    "runtime": {
+      "gpu": "Tesla T4",
+      "device": "cuda",
+      "torch": "2.8.0+cu128",
+      "cuda": "12.8",
+      "cudnn": 91002,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "python": "3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 13:09:17) [GCC 11.2.0]",
+      "torchvision": "0.23.0+cu128",
+      "timm": "1.0.30",
+      "gpu_memory_bytes": 15636037632,
+      "platform": "Lightning AI"
+    }
+  },
+  "T": 1.0,
+  "fit_split": null,
+  "val_metrics": {
+    "top1": 0.9700085689802913,
+    "macro_f1": 0.9602874885880599,
+    "balanced_acc": 0.9573902406847657,
+    "ece": 0.006707389477292179,
+    "nll": 0.10404283838334048
+  },
+  "val_uncal_metrics": null,
+  "p95_ms": 7.994760450105787,
+  "test_used": false
+}
