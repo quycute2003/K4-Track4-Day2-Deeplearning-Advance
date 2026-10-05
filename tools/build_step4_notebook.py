@@ -54,7 +54,14 @@ def checked_unpack(path,expected,*,patch=False):
             if not target.is_relative_to(PROJECT_DIR.resolve()):
                 raise ValueError('Invalid ZIP path')
             if target.exists() and not (patch and info.filename.startswith(('code/','tests/'))):
-                if patch and target.read_bytes()!=bundle.read(info):
+                existing=target.read_bytes()
+                supplied=bundle.read(info)
+                matches=existing==supplied
+                if patch and info.filename=='step4/frozen_plan.json':
+                    # Windows CRLF and Lightning LF encode the same JSON protocol.
+                    # Keep the existing bytes: val/test signatures hash this file.
+                    matches=json.loads(existing)==json.loads(supplied)
+                if patch and not matches:
                     raise FileExistsError(f'Existing frozen protocol differs: {{target}}')
                 continue
             target.parent.mkdir(parents=True,exist_ok=True)
@@ -69,7 +76,9 @@ if str(CODE_DIR) not in sys.path:
 for name in ['dataset','model','losses','train','inference','benchmark','step0','step1','step2','step3','step4']:
     sys.modules.pop(name,None)
 import step0,step4
-plan=step4.freeze_plan(PROJECT_DIR)
+# The bundle already contains the frozen plan. Preserve its exact bytes on resume
+# because completed val/test records refer to this file's SHA-256.
+plan=step4.plan_at(PROJECT_DIR)
 print(json.dumps(plan,ensure_ascii=False,indent=2))
 print('Runtime:',step4.runtime_check(PROJECT_DIR))
 '''),cell('code','tests','''command=[sys.executable,'-X','utf8','-c',

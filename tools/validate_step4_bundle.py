@@ -30,6 +30,25 @@ def main():
         # The same bootstrap must work on a fresh Studio and when its cell is rerun.
         exec(prefix, namespace)
         exec(prefix, namespace)
+        frozen = project / 'step4/frozen_plan.json'
+        plan = json.loads(frozen.read_bytes())
+        # Simulate freeze_plan() serializing the Windows ZIP's CRLF JSON on Linux.
+        linux_bytes = json.dumps(plan, ensure_ascii=False, indent=2).encode('utf-8')
+        frozen.write_bytes(linux_bytes)
+        before = hashlib.sha256(frozen.read_bytes()).hexdigest()
+        exec(prefix, namespace)
+        assert hashlib.sha256(frozen.read_bytes()).hexdigest() == before
+        # Formatting differences are harmless; actual protocol changes must stop.
+        changed = dict(plan, seeds=[0, 1, 3])
+        frozen.write_bytes(json.dumps(changed, ensure_ascii=False).encode('utf-8'))
+        try:
+            exec(prefix, namespace)
+        except FileExistsError:
+            assert json.loads(frozen.read_bytes()) == changed
+        else:
+            raise AssertionError('Changed seed protocol was silently accepted')
+        frozen.write_bytes(linux_bytes)
+        print('CRLF/LF resume keeps the plan hash; genuine seed changes are rejected.')
         env = dict(os.environ, PYTHONPATH=str(ROOT / 'runs/step0_dependencies'))
         command = [sys.executable, '-X', 'utf8', '-c',
                    "import torch,unittest; torch.set_num_threads(2); "
@@ -38,11 +57,15 @@ def main():
         result = subprocess.run(command, cwd=project, env=env, capture_output=True, text=True)
         print(result.stdout, result.stderr)
         result.check_returncode()
-        check = """import sys
+        check = f"""import hashlib,json,shutil,sys
 from pathlib import Path
-sys.path.insert(0,str(Path('code').resolve()))
-import step4
-p=step4.freeze_plan('.')
+NOTEBOOK_DIR=Path({str(directory)!r})
+PROJECT_DIR=Path.cwd()
+before=hashlib.sha256((PROJECT_DIR/'step4/frozen_plan.json').read_bytes()).hexdigest()
+# Run the actual full bootstrap, omitting only the GPU runtime probe.
+exec({bootstrap.replace("print('Runtime:',step4.runtime_check(PROJECT_DIR))", '')!r})
+assert hashlib.sha256((PROJECT_DIR/'step4/frozen_plan.json').read_bytes()).hexdigest()==before
+p=step4.plan_at('.')
 assert p['seeds']==[0,1,2] and p['groups']==['F00','F01'] and p['test_used'] is False
 for group in step4.GROUPS:
     for seed in step4.SEEDS:
